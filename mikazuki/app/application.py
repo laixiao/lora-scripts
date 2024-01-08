@@ -21,7 +21,8 @@ mimetypes.add_type("text/css", ".css")
 async def app_startup():
     await asyncio.to_thread(check_torch_gpu)
     if sys.platform == "win32":
-        webbrowser.open(f'http://{os.environ["MIKAZUKI_HOST"]}:{os.environ["MIKAZUKI_PORT"]}')
+        print("打开浏览器")
+        # webbrowser.open(f'http://{os.environ["MIKAZUKI_HOST"]}:{os.environ["MIKAZUKI_PORT"]}')
 
 
 @asynccontextmanager

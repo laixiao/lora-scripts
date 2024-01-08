@@ -1,12 +1,12 @@
 # LoRA train script by @Akegarasu
 
-$config_file = "./config/default.toml"		 # config_file | Ê¹ÓÃtomlÎÄ¼þÖ¸¶¨ÑµÁ·²ÎÊý
-$sample_prompts = "./config/sample_prompts.txt"		 # sample_prompts | ²ÉÑùpromptsÎÄ¼þ,Áô¿ÕÔò²»ÆôÓÃ²ÉÑù¹¦ÄÜ
+$config_file = "./default.toml"		 # config_file | Ê¹ï¿½ï¿½tomlï¿½Ä¼ï¿½Ö¸ï¿½ï¿½Ñµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+$sample_prompts = "./config/sample_prompts.txt"		 # sample_prompts | ï¿½ï¿½ï¿½ï¿½promptsï¿½Ä¼ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-$sdxl = 0        # for sdxl model | SDXL ÑµÁ·
-$multi_gpu = 0		 # multi gpu | ¶àÏÔ¿¨ÑµÁ· ¸Ã²ÎÊý½öÏÞÔÚÏÔ¿¨Êý >= 2 Ê¹ÓÃ
+$sdxl = 0        # for sdxl model | SDXL Ñµï¿½ï¿½
+$multi_gpu = 0		 # multi gpu | ï¿½ï¿½ï¿½Ô¿ï¿½Ñµï¿½ï¿½ ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ >= 2 Ê¹ï¿½ï¿½
 
-# ============= DO NOT MODIFY CONTENTS BELOW | ÇëÎðÐÞ¸ÄÏÂ·½ÄÚÈÝ =====================
+# ============= DO NOT MODIFY CONTENTS BELOW | ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ =====================
 
 # Activate python venv
 .\venv\Scripts\activate
