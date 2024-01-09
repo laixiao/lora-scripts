@@ -21,7 +21,8 @@ mimetypes.add_type("text/css", ".css")
 async def app_startup():
     await asyncio.to_thread(check_torch_gpu)
     if sys.platform == "win32":
-        print("打开浏览器")
+        print("启动成功")
+        print("请拖入图片文件夹开始训练")
         # webbrowser.open(f'http://{os.environ["MIKAZUKI_HOST"]}:{os.environ["MIKAZUKI_PORT"]}')
 
 

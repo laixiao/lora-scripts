@@ -4,7 +4,7 @@
 
 .\venv\Scripts\python.exe -m pip install wxPython
 
-.\venv\Scripts\python.exe auto_lora.py
+.\venv\Scripts\python.exe gui.py
 
 """
 
@@ -174,13 +174,22 @@ class TrainingClient:
         return response
 
     def start_training(self):
-        response = self.post_request()
-        if response.status_code == 200:
-            print("请求成功：", response.json())
-            # wx.MessageBox("训练任务启动成功！", "确定")
-        else:
-            print("请求失败：", response.status_code)
-            # wx.MessageBox("训练失败", "确定")
+        thread = threading.Thread(target=self.send_training_request)
+        thread.start()
+
+    def send_training_request(self):
+        try:
+            response = requests.post(
+                self.url, headers=self.headers, data=json.dumps(self.data)
+            )
+            if response.status_code == 200:
+                print("开启训练成功：", response.json())
+            else:
+                print("开启训练失败：", response.status_code)
+
+        except Exception as e:
+            print(f"开始训练失败：{e}")
+
 
 class TextCtrlRedirector:
     def __init__(self, text_ctrl):
@@ -188,6 +197,12 @@ class TextCtrlRedirector:
 
     def write(self, text):
         self.text_ctrl.AppendText(text)
+
+    def flush(self):
+        pass
+
+    def isatty(self):
+        return False
 
 
 class MyFrame(wx.Frame):
@@ -220,11 +235,10 @@ class MyFrame(wx.Frame):
         # 拖入图片文件夹开始训练Lora
         # self.helloText = wx.StaticText(self, label="拖入图片文件夹开始训练Lora", pos=(10, 100))
 
-        self.log_message(f"拖入图片文件夹开始训练Lora")
+        self.log_message(f"请稍后，启动中...")
 
-         # 将命令行输出重定向到logTextCtrl
+        # 将命令行输出重定向到logTextCtrl
         sys.stdout = TextCtrlRedirector(self.logTextCtrl)
-
 
     def log_message(self, message):
         """向日志控件中添加一条消息，并滚动到最新消息"""
