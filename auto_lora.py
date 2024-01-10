@@ -17,6 +17,51 @@ import time
 import requests
 import wx
 import sys
+import toml
+import os
+
+
+def find_default_toml_in_parent_of_current_project():
+    # 获取当前脚本的绝对路径
+    current_script_path = os.path.abspath(__file__)
+
+    # 获取当前脚本所在的目录（即项目目录）
+    project_dir = os.path.dirname(current_script_path)
+
+    # 获取项目目录的上一层目录
+    parent_dir = os.path.dirname(project_dir)
+
+    # 检查在上一层目录中是否存在default.toml文件
+    default_toml_path = os.path.join(parent_dir, "default.toml")
+    if os.path.isfile(default_toml_path):
+        return default_toml_path
+    else:
+        return None
+
+
+# 调用函数
+path_to_default_toml = find_default_toml_in_parent_of_current_project()
+
+
+def read_config_from_toml(file_path):
+    try:
+        # 打开并读取TOML文件
+        with open(file_path, "r", encoding="utf-8") as file:
+            config = toml.load(file)
+            return config
+    except FileNotFoundError:
+        print("默认配置参数文件未找到")
+        return None
+    except toml.TomlDecodeError:
+        print("默认配置参数TOML文件格式错误")
+        return None
+
+
+# 使用示例
+tomlConfig = read_config_from_toml(path_to_default_toml)
+
+# if config is not None:
+#     print(config)  # 打印配置信息
 
 
 def boot():
@@ -26,7 +71,7 @@ def boot():
 
 class MyApp(wx.App):
     def OnInit(self):
-        self.frame = MyFrame("Lora训练工具", (50, 60), (600, 340))
+        self.frame = MyFrame("Lora训练工具", (50, 60), (750, 400))
         self.frame.Show()
         return True
 
@@ -96,6 +141,8 @@ class FileWatcher:
 
 class TrainingClient:
     def __init__(self, custom_data=None):
+        global tomlConfig
+
         self.url = "http://127.0.0.1:28000/api/run"
         self.headers = {
             "Accept": "*/*",
@@ -115,57 +162,74 @@ class TrainingClient:
         }
 
         self.data = {
-            "model_train_type": "sd-lora",
-            "pretrained_model_name_or_path": "./sd-models/absolutereality_v16.safetensors",
-            "v2": False,
-            "train_data_dir": "./train/test",
-            "prior_loss_weight": 1,
-            "resolution": "512,512",
-            "enable_bucket": True,
-            "min_bucket_reso": 256,
-            "max_bucket_reso": 1024,
-            "bucket_reso_steps": 64,
-            "output_name": "aki",
-            "output_dir": "./output",
-            "save_model_as": "safetensors",
-            "save_precision": "fp16",
-            "save_every_n_epochs": 2,
-            "max_train_epochs": 10,
-            "train_batch_size": 1,
-            "gradient_checkpointing": False,
-            "network_train_unet_only": False,
-            "network_train_text_encoder_only": False,
-            "learning_rate": 0.0001,
-            "unet_lr": 0.0001,
-            "text_encoder_lr": 0.00001,
-            "lr_scheduler": "cosine_with_restarts",
-            "lr_warmup_steps": 0,
-            "lr_scheduler_num_cycles": 1,
-            "optimizer_type": "AdamW8bit",
-            "network_module": "networks.lora",
-            "network_dim": 32,
-            "network_alpha": 32,
-            "log_with": "tensorboard",
-            "logging_dir": "./logs",
-            "caption_extension": ".txt",
-            "shuffle_caption": True,
-            "keep_tokens": 0,
-            "max_token_length": 255,
-            "seed": 1337,
-            "clip_skip": 2,
-            "mixed_precision": "fp16",
-            "xformers": True,
-            "lowram": False,
-            "cache_latents": True,
-            "cache_latents_to_disk": True,
-            "cache_text_encoder_outputs": False,
-            "cache_text_encoder_outputs_to_disk": False,
-            "persistent_data_loader_workers": True,
-            "gpu_ids": ["0"],
+            "model_train_type": tomlConfig.get("model_train_type", "sd-lora"),
+            "pretrained_model_name_or_path": tomlConfig.get(
+                "pretrained_model_name_or_path",
+                "./sd-models/absolutereality_v16.safetensors",
+            ),
+            "v2": tomlConfig.get("v2", "false"),
+            "train_data_dir": tomlConfig.get("train_data_dir", "./train/test"),
+            "prior_loss_weight": tomlConfig.get("prior_loss_weight", 1),
+            "resolution": tomlConfig.get("resolution", "512,512"),
+            "enable_bucket": tomlConfig.get("enable_bucket", "true"),
+            "min_bucket_reso": tomlConfig.get("min_bucket_reso", 256),
+            "max_bucket_reso": tomlConfig.get("max_bucket_reso", 1024),
+            "bucket_reso_steps": tomlConfig.get("bucket_reso_steps", 64),
+            "output_name": tomlConfig.get("output_name", "aki"),
+            "output_dir": tomlConfig.get("output_dir", "./output"),
+            "save_model_as": tomlConfig.get("save_model_as", "safetensors"),
+            "save_precision": tomlConfig.get("save_precision", "fp16"),
+            "save_every_n_epochs": tomlConfig.get("save_every_n_epochs", 2),
+            "max_train_epochs": tomlConfig.get("max_train_epochs", 10),
+            "train_batch_size": tomlConfig.get("train_batch_size", 1),
+            "gradient_checkpointing": tomlConfig.get("gradient_checkpointing", "false"),
+            "network_train_unet_only": tomlConfig.get(
+                "network_train_unet_only", "false"
+            ),
+            "network_train_text_encoder_only": tomlConfig.get(
+                "network_train_text_encoder_only", "false"
+            ),
+            "learning_rate": tomlConfig.get("learning_rate", 0.0001),
+            "unet_lr": tomlConfig.get("unet_lr", 0.0001),
+            "text_encoder_lr": tomlConfig.get("text_encoder_lr", 0.00001),
+            "lr_scheduler": tomlConfig.get("lr_scheduler", "cosine_with_restarts"),
+            "lr_warmup_steps": tomlConfig.get("lr_warmup_steps", 0),
+            "lr_scheduler_num_cycles": tomlConfig.get("lr_scheduler_num_cycles", 1),
+            "optimizer_type": tomlConfig.get("optimizer_type", "AdamW8bit"),
+            "network_module": tomlConfig.get("network_module", "networks.lora"),
+            "network_dim": tomlConfig.get("network_dim", 32),
+            "network_alpha": tomlConfig.get("network_alpha", 32),
+            "log_with": tomlConfig.get("log_with", "tensorboard"),
+            "logging_dir": tomlConfig.get("logging_dir", "./logs"),
+            "caption_extension": tomlConfig.get("caption_extension", ".txt"),
+            "shuffle_caption": tomlConfig.get("shuffle_caption", "true"),
+            "keep_tokens": tomlConfig.get("keep_tokens", 0),
+            "max_token_length": tomlConfig.get("max_token_length", 255),
+            "seed": tomlConfig.get("seed", 1337),
+            "clip_skip": tomlConfig.get("clip_skip", 2),
+            "mixed_precision": tomlConfig.get("mixed_precision", "fp16"),
+            "xformers": tomlConfig.get("xformers", "true"),
+            "lowram": tomlConfig.get("lowram", "false"),
+            "cache_latents": tomlConfig.get("cache_latents", "true"),
+            "cache_latents_to_disk": tomlConfig.get("cache_latents_to_disk", "true"),
+            "cache_text_encoder_outputs": tomlConfig.get(
+                "cache_text_encoder_outputs", "false"
+            ),
+            "cache_text_encoder_outputs_to_disk": tomlConfig.get(
+                "cache_text_encoder_outputs_to_disk", "false"
+            ),
+            "persistent_data_loader_workers": tomlConfig.get(
+                "persistent_data_loader_workers", "true"
+            ),
+            "gpu_ids": tomlConfig.get("gpu_ids", ["0"]),
         }
 
         if custom_data:
             self.data.update(custom_data)
+
+        print("=======训练参数=======")
+        for key, value in self.data.items():
+            print(key, value)
 
     def post_request(self):
         response = requests.post(
@@ -183,7 +247,7 @@ class TrainingClient:
                 self.url, headers=self.headers, data=json.dumps(self.data)
             )
             if response.status_code == 200:
-                print("开启训练成功：", response.json())
+                print("训练状态：", response.json())
             else:
                 print("开启训练失败：", response.status_code)
 
@@ -211,13 +275,13 @@ class MyFrame(wx.Frame):
 
         self.folderQueue = queue.Queue()  # 在这里定义队列
 
-        # 创建菜单栏
-        menuBar = wx.MenuBar()
-        settingsMenu = wx.Menu()
-        item = settingsMenu.Append(wx.ID_ANY, "训练参数", "配置默认训练参数")
-        self.Bind(wx.EVT_MENU, self.OnSettings, item)
-        menuBar.Append(settingsMenu, "选项")
-        self.SetMenuBar(menuBar)
+        # # 创建菜单栏
+        # menuBar = wx.MenuBar()
+        # settingsMenu = wx.Menu()
+        # item = settingsMenu.Append(wx.ID_ANY, "训练参数", "配置默认训练参数")
+        # self.Bind(wx.EVT_MENU, self.OnSettings, item)
+        # menuBar.Append(settingsMenu, "选项")
+        # self.SetMenuBar(menuBar)
 
         # 设置拖放
         dropTarget = FileDrop(self)
@@ -254,7 +318,7 @@ class MyFrame(wx.Frame):
             folderPath = self.folderQueue.get()
             folderName = os.path.basename(folderPath)
             self.log_message(f"开始训练Lora: {folderPath}")
-            print(f"Lora训练中: {folderPath}")
+            # print(f"Lora训练中: {folderPath}")
             # 启动训练逻辑...
             # 训练完成后需要调用self.start_training_folder()来处理下一个文件夹
             custom_data = {
