@@ -71,7 +71,7 @@ def boot():
 
 class MyApp(wx.App):
     def OnInit(self):
-        self.frame = MyFrame("Lora训练工具", (50, 60), (750, 400))
+        self.frame = MyFrame("Lora训练工具", (50, 60), (960, 640))
         self.frame.Show()
         return True
 
